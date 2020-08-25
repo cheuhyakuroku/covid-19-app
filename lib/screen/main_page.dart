@@ -14,6 +14,19 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  Future<DataModel> cases;
+
+  @override
+  void initState() {
+    getData();
+    super.initState();
+  }
+
+  Future<void> getData() async {
+    cases = Api.fetchData();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,25 +34,28 @@ class _MainPageState extends State<MainPage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: MyColors.bg),
         ),
-        child: FutureBuilder<DataModel>(
-          future: Api.fetchData(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MyBanner(),
-                    ThongKe(tongCa: snapshot.data.tongCa),
-                    PhanBo(imageModel: snapshot.data.imageData),
-                    CacTinh(data: snapshot.data.chiTiet),
-                  ],
-                ),
-              );
-            }
-            return Loading(isLoad: true);
-          },
+        child: RefreshIndicator(
+          onRefresh: getData,
+          child: FutureBuilder<DataModel>(
+            future: cases,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      MyBanner(),
+                      ThongKe(tongCa: snapshot.data.tongCa),
+                      PhanBo(imageModel: snapshot.data.imageData),
+                      CacTinh(data: snapshot.data.chiTiet),
+                    ],
+                  ),
+                );
+              }
+              return Loading(isLoad: true);
+            },
+          ),
         ),
       ),
     );
